@@ -8,4 +8,11 @@ class Product < ActiveRecord::Base
      with: %r{\.(gif|jpg|png)\Z}i,
      message: 'must be a URL for GIF, JPG or PNG image.'
   }
+
+  def validate_business_rules
+     return unless self.meets_criteria
+     return unless self.validatation_applicable
+
+     errors.add(:fields, "cannot be set since criterias are not met")
+  end
 end
