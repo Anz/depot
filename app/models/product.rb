@@ -1,18 +1,28 @@
 class Product < ActiveRecord::Base
+
+  default_scope :order => 'title'
+
+  has_many :line_items
+
+  before_destroy :ensure_not_referenced_by_any_line_item
+
+  def ensure_not_referenced_by_any_line_item
+    if line_items.count.zero?
+      return true
+    else
+      errors[:base] << "Line Items present"
+      return false
+    end
+  end
+
   attr_accessible :description, :image_url, :price, :title
 
-  validates :title, :description, :image_url, presence: true
-  validates :price, numericality: {greater_tahn_or_equal_to: 0.01}
-  validates :title, uniqueness: true
-  validates :image_url, allow_blank: true, format: {
-     with: %r{\.(gif|jpg|png)\Z}i,
-     message: 'must be a URL for GIF, JPG or PNG image.'
+  validates :title, :description, :image_url, :presence => true
+  validates :title, :uniqueness => true
+  validates :image_url, :format => {
+          :with   => %r{\.(gif|jpg|png)$}i,
+          :message => 'must be a URL for GIF JPG or PNG image.'
   }
+  validates :price, :numericality => {:greater_than_or_equal_to => 0.01}
 
-  def validate_business_rules
-     return unless self.meets_criteria
-     return unless self.validatation_applicable
-
-     errors.add(:fields, "cannot be set since criterias are not met")
-  end
 end
